@@ -6,12 +6,17 @@
 
    A new worker waits rather than taking over, so the app can offer the
    update instead of reloading underneath someone mid-session. */
-const CACHE = 'assistant-coach-85c2262d';
+const CACHE = 'assistant-coach-284c4db1';
 const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './favicon.png'];
 
 self.addEventListener('install', e => {
+  /* Cache each file on its own. addAll gives up entirely if one file is
+     missing, which meant a single absent icon could stop the whole app
+     working offline. */
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(CORE).catch(() => c.add('./index.html')))
+    caches.open(CACHE).then(c =>
+      Promise.allSettled(CORE.map(u => c.add(u)))
+    )
   );
 });
 
